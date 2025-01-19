@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "twitch-observer"
+version = "0.1.0"
+description = ""
+authors = ["Vitaly Zorin <addefan@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+requests = "^2.32.3"
+pydantic-settings = "^2.7.1"
+pydantic = "^2.10.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
