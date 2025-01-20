@@ -86,6 +86,24 @@ class Twitch:
 
         return self._request(url, data, method="delete")
 
+    def set_channel_update_webhook(self, username, callback_url):
+        url = f"{settings.twitch.eventsub_api_url}/subscriptions"
+
+        data = {
+            "type": "channel.update",
+            "version": "2",
+            "condition": {
+                "broadcaster_user_id": self.get_user_id(username),
+            },
+            "transport": {
+                "method": "webhook",
+                "callback": callback_url,
+                "secret": settings.twitch.request_secret.get_secret_value(),
+            },
+        }
+
+        return self._request(url, data, method="post")
+
 
 if __name__ == "__main__":
     twitch = Twitch()
@@ -96,5 +114,8 @@ if __name__ == "__main__":
     # from pprint import pprint
     # pprint(response.json())
 
-    response = twitch.delete_webhook("5c36e5b2-fdeb-42d9-9a99-468f50285fb4")
-    print(response.status_code)
+    # response = twitch.delete_webhook("5c36e5b2-fdeb-42d9-9a99-468f50285fb4")
+    # print(response.status_code)
+
+    response = twitch.set_channel_update_webhook("addefan", "https://functions.yandexcloud.net/d4e3e1pj20kiarv743rf")
+    print(response.json())
