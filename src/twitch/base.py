@@ -35,7 +35,11 @@ class TwitchBase:
 
         if response.status_code == 401 and response.json()["message"] == "Invalid OAuth token":
             self.get_token()
-            return self._request(method, url, **kwargs)
+            response = self._request(method, url, **kwargs)
+            response.raise_for_status()
+
+        if settings.debug:
+            logger.debug(f"Sent request to Twitch with code {response.status_code}.", data=response.json())
 
         return response
 

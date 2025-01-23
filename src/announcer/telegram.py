@@ -21,6 +21,3 @@ class Telegram:
         if settings.debug:
             data = {"message": data, "response": response.json()}
             logger.debug(f"Sent message with code {response.status_code}.", data=data)
-
-
-telegram = Telegram()

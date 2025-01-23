@@ -1,3 +1,6 @@
+import hashlib
+import hmac
+
 from settings import settings
 from twitch.base import TwitchBase
 
@@ -49,6 +52,16 @@ class TwitchWebhooks(TwitchBase):
 
         return self._set_webhook("channel.update", "2", condition, callback_url)
 
+    def verify_signature(self, event):
+        headers = event["headers"]
+
+        received_signature = headers["Twitch-Eventsub-Message-Signature"]
+        message = headers["Twitch-Eventsub-Message-Id"] + headers["Twitch-Eventsub-Message-Timestamp"] + event["body"]
+        actual_signature = "sha256=" + hmac.new(settings.event_secret.get_secret_value().encode("utf-8"),
+                                                message.encode("utf-8"), hashlib.sha256).hexdigest()
+
+        return received_signature == actual_signature
+
 
 if __name__ == "__main__":
     twitch = TwitchWebhooks()
@@ -59,6 +72,7 @@ if __name__ == "__main__":
     # response = twitch.set_stream_online_webhook(user_id, "https://functions.yandexcloud.net/d4e3e1pj20kiarv743rf")
     response = twitch.list_webhooks()
     from pprint import pprint
+
     pprint(response.json())
 
     # response = twitch.delete_webhook("5c36e5b2-fdeb-42d9-9a99-468f50285fb4")

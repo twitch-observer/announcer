@@ -1,28 +1,18 @@
-import hashlib
-import hmac
 import json
 from datetime import datetime
 
 from announcer.utils import fmt
 from debug import logger
 from settings import settings
-from telegram import telegram
-from texts import ANNOUNCE
+from telegram import Telegram
+from texts import ANNOUNCE, USER_NOT_FOUND
+from twitch import Twitch
+
+twitch, telegram = Twitch(), Telegram()
 
 SUCCESS_RESPONSE = {
     "statusCode": 200,
 }
-
-
-def verify_signature(event):
-    headers = event["headers"]
-
-    received_signature = headers["Twitch-Eventsub-Message-Signature"]
-    message = headers["Twitch-Eventsub-Message-Id"] + headers["Twitch-Eventsub-Message-Timestamp"] + event["body"]
-    actual_signature = "sha256=" + hmac.new(settings.event_secret.get_secret_value().encode("utf-8"),
-                                            message.encode("utf-8"), hashlib.sha256).hexdigest()
-
-    return received_signature == actual_signature
 
 
 def handle_twitch_event(body):
@@ -53,7 +43,11 @@ def handle_telegram_event(body):
     if (text := message.get("text")) and text.startswith("/add"):
         username = text[5:]
 
-        logger.info(f"Need to subscribe on {username}")
+        user_id = twitch.get_user_id(username)
+        if not user_id:
+            telegram.send_message(settings.telegram.chat_id, fmt(USER_NOT_FOUND, username=username))
+
+        twitch.webhooks.set_stream_online_webhook(user_id, settings.webhooks_callback_url)
 
     return SUCCESS_RESPONSE
 
@@ -64,7 +58,7 @@ def handler(event, context):
         logger.debug("Received event.", data=event)
         logger.debug("Body from received event.", data=body)
 
-    if event["headers"].get("Twitch-Eventsub-Message-Id") and verify_signature(event):
+    if event["headers"].get("Twitch-Eventsub-Message-Id") and twitch.webhooks.verify_signature(event):
         return handle_twitch_event(body)
 
     if (token := event["headers"].get(
