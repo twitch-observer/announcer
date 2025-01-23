@@ -15,7 +15,7 @@ class TwitchWebhooks(TwitchBase):
             "transport": {
                 "method": "webhook",
                 "callback": callback_url,
-                "secret": settings.twitch.request_secret.get_secret_value(),
+                "secret": settings.event_secret.get_secret_value(),
             },
         }
 
