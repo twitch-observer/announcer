@@ -1,4 +1,4 @@
-from pydantic import SecretStr
+from pydantic import SecretStr, computed_field
 from pydantic_settings import BaseSettings as PydanticBaseSettings
 
 
@@ -13,8 +13,12 @@ class TwitchSettings(BaseSettings):
     client_secret: SecretStr
 
     api_url: str = "https://api.twitch.tv/helix"
-    eventsub_api_url: str = f"{api_url}/eventsub"
     oauth_url: str = "https://id.twitch.tv/oauth2"
+
+    @computed_field
+    @property
+    def eventsub_api_url(self) -> str:
+        return f"{self.api_url}/eventsub"
 
     class Config:
         env_prefix = "twitch_"
@@ -24,7 +28,10 @@ class TelegramSettings(BaseSettings):
     bot_token: SecretStr
     chat_id: int
 
-    api_url: str = f"https://api.telegram.org/bot{bot_token.get_secret_value()}"
+    @computed_field
+    @property
+    def api_url(self) -> str:
+        return f"https://api.telegram.org/bot{self.bot_token.get_secret_value()}"
 
     class Config:
         env_prefix = "telegram_"

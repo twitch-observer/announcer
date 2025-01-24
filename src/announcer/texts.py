@@ -8,6 +8,16 @@ ANNOUNCE = {
 }
 
 USER_NOT_FOUND = {
-    "text": "The user with username {username} was not found\\.",
+    "text": "The user with username *{username}* was not found\\.",
+    "parse_mode": ParseMode.MARKDOWN_V2,
+}
+
+USER_ADDED = {
+    "text": "The user with username *{username}* has been successfully added to the list of tracked users\\.",
+    "parse_mode": ParseMode.MARKDOWN_V2,
+}
+
+USER_ALREADY_ADDED = {
+    "text": "The user with username *{username}* was already added to the list of tracked users\\.",
     "parse_mode": ParseMode.MARKDOWN_V2,
 }

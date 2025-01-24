@@ -1,11 +1,11 @@
 import json
 from datetime import datetime
 
+from announcer.telegram import Telegram
+from announcer.texts import ANNOUNCE, USER_NOT_FOUND, USER_ADDED, USER_ALREADY_ADDED
 from announcer.utils import fmt
 from debug import logger
 from settings import settings
-from telegram import Telegram
-from texts import ANNOUNCE, USER_NOT_FOUND
 from twitch import Twitch
 
 twitch, telegram = Twitch(), Telegram()
@@ -45,9 +45,20 @@ def handle_telegram_event(body):
 
         user_id = twitch.get_user_id(username)
         if not user_id:
-            telegram.send_message(settings.telegram.chat_id, fmt(USER_NOT_FOUND, username=username))
+            telegram.send_message(settings.telegram.chat_id,
+                                  fmt(USER_NOT_FOUND, username=username),
+                                  USER_NOT_FOUND["parse_mode"])
 
-        twitch.webhooks.set_stream_online_webhook(user_id, settings.webhooks_callback_url)
+        response = twitch.webhooks.set_stream_online_webhook(user_id, settings.webhooks_callback_url)
+        if response.status_code == 202:
+            telegram.send_message(settings.telegram.chat_id,
+                                  fmt(USER_ADDED, username=username),
+                                  USER_ADDED["parse_mode"])
+
+        if response.status_code == 409:
+            telegram.send_message(settings.telegram.chat_id,
+                                  fmt(USER_ALREADY_ADDED, username=username),
+                                  USER_ALREADY_ADDED["parse_mode"])
 
     return SUCCESS_RESPONSE
 

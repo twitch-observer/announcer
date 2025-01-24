@@ -1,7 +1,6 @@
-from settings import settings
-
 import requests
 
+from settings import settings
 
 if __name__ == "__main__":
     url = f"{settings.telegram.api_url}/setWebhook"
