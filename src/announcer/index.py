@@ -20,17 +20,24 @@ def handle_twitch_event(body):
         return {"body": challenge}
 
     event = body["event"]
+    user_id = event["broadcaster_user_id"]
     username = event["broadcaster_user_name"]
     login = event["broadcaster_user_login"]
     started_at = event["started_at"]
     stream_id = event["id"]
 
-    started_at = datetime.fromisoformat(started_at).timestamp()
+    started_at = int(datetime.fromisoformat(started_at).timestamp())
     download_id = f"{login}_{stream_id}_{started_at}"
 
-    telegram.send_message(settings.telegram.chat_id,
-                          fmt(ANNOUNCE, username=username, login=login, download_id=download_id),
-                          ANNOUNCE["parse_mode"])
+    channel_info = twitch.get_channel_info(user_id)
+    title = channel_info["title"]
+    game = channel_info["game_name"]
+
+    preview = f"https://static-cdn.jtvnw.net/previews-ttv/live_user_{login}-1920x1080.jpg"
+
+    telegram.send_photo(settings.telegram.chat_id, preview,
+                        fmt(ANNOUNCE, username=username, title=title, game=game, login=login, download_id=download_id),
+                        ANNOUNCE["parse_mode"])
 
     return SUCCESS_RESPONSE
 
@@ -41,24 +48,28 @@ def handle_telegram_event(body):
         return SUCCESS_RESPONSE
 
     if (text := message.get("text")) and text.startswith("/add"):
-        username = text[5:]
+        login = text[5:]
 
-        user_id = twitch.get_user_id(username)
-        if not user_id:
+        user = twitch.get_user(login)
+        if not user:
             telegram.send_message(settings.telegram.chat_id,
-                                  fmt(USER_NOT_FOUND, username=username),
+                                  fmt(USER_NOT_FOUND, login=login),
                                   USER_NOT_FOUND["parse_mode"])
+            return SUCCESS_RESPONSE
 
-        response = twitch.webhooks.set_stream_online_webhook(user_id, settings.webhooks_callback_url)
+        username = user["display_name"]
+        response = twitch.webhooks.set_stream_online_webhook(user["id"], settings.webhooks_callback_url)
         if response.status_code == 202:
             telegram.send_message(settings.telegram.chat_id,
                                   fmt(USER_ADDED, username=username),
                                   USER_ADDED["parse_mode"])
+            return SUCCESS_RESPONSE
 
         if response.status_code == 409:
             telegram.send_message(settings.telegram.chat_id,
                                   fmt(USER_ALREADY_ADDED, username=username),
                                   USER_ALREADY_ADDED["parse_mode"])
+            return SUCCESS_RESPONSE
 
     return SUCCESS_RESPONSE
 

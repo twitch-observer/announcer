@@ -52,7 +52,7 @@ class TwitchBase:
     def delete(self, url, params=None, **kwargs):
         return self._request("delete", url, params=params, **kwargs)
 
-    def get_user_id(self, username):
+    def get_user(self, username):
         url = f"{settings.twitch.api_url}/users"
 
         data = {
@@ -66,4 +66,16 @@ class TwitchBase:
             logger.error(f"User with username {username} doesn't exist.")
             return None
 
-        return response.json()["data"][0]["id"]
+        return response.json()["data"][0]
+
+    def get_channel_info(self, user_id):
+        url = f"{settings.twitch.api_url}/channels"
+
+        data = {
+            "broadcaster_id": user_id,
+        }
+
+        response = self.get(url, data)
+        response.raise_for_status()
+
+        return response.json()["data"][0]

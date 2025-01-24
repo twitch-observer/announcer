@@ -67,7 +67,7 @@ if __name__ == "__main__":
     twitch = TwitchWebhooks()
 
     username = "addefan"
-    user_id = twitch.get_user_id(username)
+    user_id = twitch.get_user(username)["id"]
 
     # response = twitch.set_stream_online_webhook(user_id, "https://functions.yandexcloud.net/d4e3e1pj20kiarv743rf")
     response = twitch.list_webhooks()
