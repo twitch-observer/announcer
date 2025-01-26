@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from os import environ
 from pathlib import Path
 
 from announcer.telegram import Telegram
@@ -76,6 +77,8 @@ def handle_telegram_event(body):
 
 
 def handler(event, context):
+    environ["WEBHOOKS_CALLBACK_URL"] = f"https://functions.yandexcloud.net/{context.function_name}"
+
     body = json.loads(event["body"])
     if settings.debug:
         logger.debug("Received event.", data=event)

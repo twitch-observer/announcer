@@ -53,16 +53,3 @@ resource "local_file" "requirements" {
     pydantic
   EOT
 }
-
-output "twitch_observer_announcer_editor_url" {
-  value       = "https://console.yandex.cloud/folders/${var.folder_id}/functions/functions/${yandex_function.twitch_observer_announcer.id}/editor"
-  description = <<EOT
-                Ссылка на редактор функции, в которую необходимо вручную добавить переменную окружения
-                под названием WEBHOOKS_CALLBACK_URL со значением из переменной twitch_observer_announcer_url
-                EOT
-}
-
-output "twitch_observer_announcer_url" {
-  value       = local.twitch_observer_announcer_url
-  description = "Ссылка на вызов функции, которая будет использоваться для настройки вебхуков"
-}
