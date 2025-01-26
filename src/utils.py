@@ -1,6 +1,6 @@
 import re
 
-from announcer.enums import ParseMode
+from enums import ParseMode
 
 
 def fmt(text, **kwargs):
@@ -12,3 +12,7 @@ def fmt(text, **kwargs):
 
 def escape_markdown_v2(text):
     return re.sub(r"([_*[\]()~`>#+\-=|{}.!])", r"\\\1", text)
+
+
+def filter_none(**kwargs):
+    return {k: v for k, v in kwargs.items() if v is not None}

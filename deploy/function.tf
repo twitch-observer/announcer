@@ -2,7 +2,7 @@ resource "yandex_function" "twitch_observer_announcer" {
   name              = "twitch-observer-announcer"
   user_hash         = data.archive_file.twitch_observer_announcer_source.output_sha512
   runtime           = "python312"
-  entrypoint        = "announcer.index.handler"
+  entrypoint        = "index.handler"
   memory            = "128"
   execution_timeout = "30"
 
@@ -22,9 +22,9 @@ resource "yandex_function" "twitch_observer_announcer" {
 
 data "archive_file" "twitch_observer_announcer_source" {
   type        = "zip"
-  source_dir  = "../../src"
-  output_path = "../../build/twitch_observer_announcer_source.zip"
-  excludes = ["**/__pycache__/**", "announcer/set_telegram_webhook.py", "downloader/**"]
+  source_dir  = "../src"
+  output_path = "../build/twitch_observer_announcer_source.zip"
+  excludes = ["**/__pycache__/**", "set_telegram_webhook.py"]
 
   depends_on = [local_file.requirements]
 }
@@ -46,7 +46,7 @@ resource "yandex_function_iam_binding" "exam_solver_tg_bot_iam" {
 }
 
 resource "local_file" "requirements" {
-  filename = "../../src/requirements.txt"
+  filename = "../src/requirements.txt"
   content  = <<-EOT
     requests
     pydantic-settings

@@ -1,6 +1,7 @@
 import requests
 
-from announcer.enums import ParseMode
+from enums import ParseMode
+from utils import filter_none
 from debug import logger
 from settings import settings
 
@@ -28,12 +29,10 @@ class Telegram:
         data = {
             "chat_id": chat_id,
             "photo": photo_url,
+            **filter_none(caption=caption),
         }
 
-        if caption:
-            data["caption"] = caption
-
-        if parse_mode:
+        if parse_mode in ParseMode:
             data["parse_mode"] = parse_mode
 
         response = requests.post(url=url, json=data)

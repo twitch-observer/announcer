@@ -1,4 +1,4 @@
-from announcer.enums import ParseMode
+from enums import ParseMode
 
 ANNOUNCE = {
     "text": "*{username}* is now live\\.\n"

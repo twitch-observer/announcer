@@ -3,9 +3,9 @@ from datetime import datetime
 from os import environ
 from pathlib import Path
 
-from announcer.telegram import Telegram
-from announcer.texts import ANNOUNCE, USER_NOT_FOUND, USER_ADDED, USER_ALREADY_ADDED
-from announcer.utils import fmt
+from telegram import Telegram
+from texts import ANNOUNCE, USER_NOT_FOUND, USER_ADDED, USER_ALREADY_ADDED
+from utils import fmt
 from debug import logger
 from settings import settings
 from twitch import Twitch
