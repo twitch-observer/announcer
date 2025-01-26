@@ -42,7 +42,6 @@ class Settings(BaseSettings):
     telegram: TelegramSettings = TelegramSettings()
     event_secret: SecretStr
     debug: bool = False
-    webhooks_callback_url: str
 
 
 settings = Settings()

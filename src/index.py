@@ -1,14 +1,13 @@
 import json
 from datetime import datetime
-from os import environ
 from pathlib import Path
 
-from telegram import Telegram
-from texts import ANNOUNCE, USER_NOT_FOUND, USER_ADDED, USER_ALREADY_ADDED
-from utils import fmt
 from debug import logger
 from settings import settings
+from telegram import Telegram
+from texts import ANNOUNCE, USER_NOT_FOUND, USER_ADDED, USER_ALREADY_ADDED
 from twitch import Twitch
+from utils import fmt
 
 twitch, telegram = Twitch(), Telegram()
 
@@ -44,7 +43,7 @@ def handle_twitch_event(body):
     return SUCCESS_RESPONSE
 
 
-def handle_telegram_event(body):
+def handle_telegram_event(body, callback_url):
     message = body.get("message")
     if not message:
         return SUCCESS_RESPONSE
@@ -60,7 +59,7 @@ def handle_telegram_event(body):
             return SUCCESS_RESPONSE
 
         username = user["display_name"]
-        response = twitch.webhooks.set_stream_online_webhook(user["id"], settings.webhooks_callback_url)
+        response = twitch.webhooks.set_stream_online_webhook(user["id"], callback_url=callback_url)
         if response.status_code == 202:
             telegram.send_message(settings.telegram.chat_id,
                                   fmt(USER_ADDED, username=username),
@@ -77,8 +76,6 @@ def handle_telegram_event(body):
 
 
 def handler(event, context):
-    environ["WEBHOOKS_CALLBACK_URL"] = f"https://functions.yandexcloud.net/{context.function_name}"
-
     body = json.loads(event["body"])
     if settings.debug:
         logger.debug("Received event.", data=event)
@@ -94,8 +91,9 @@ def handler(event, context):
         message_id_path.touch()
         return response
 
-    if (token := event["headers"].get("X-Telegram-Bot-Api-Secret-Token")) and token == settings.event_secret.get_secret_value():
-        return handle_telegram_event(body)
+    if (token := event["headers"].get(
+            "X-Telegram-Bot-Api-Secret-Token")) and token == settings.event_secret.get_secret_value():
+        return handle_telegram_event(body, f"https://functions.yandexcloud.net/{context.function_name}")
 
     if settings.debug:
         logger.debug("Event isn't from Twitch and Telegram or was faked.")

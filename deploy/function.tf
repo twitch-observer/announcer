@@ -24,7 +24,7 @@ data "archive_file" "twitch_observer_announcer_source" {
   type        = "zip"
   source_dir  = "../src"
   output_path = "../build/twitch_observer_announcer_source.zip"
-  excludes = ["**/__pycache__/**", "set_telegram_webhook.py"]
+  excludes = ["**/__pycache__/**"]
 
   depends_on = [local_file.requirements]
 }
