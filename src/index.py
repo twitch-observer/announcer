@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from time import time
 
 from debug import logger
 from settings import settings
@@ -34,7 +35,8 @@ def handle_twitch_event(body):
     title = channel_info["title"]
     game = channel_info["game_name"]
 
-    preview = f"https://static-cdn.jtvnw.net/previews-ttv/live_user_{login}-1920x1080.jpg"
+    # GET-parameter `a` to avoid caching on Telegram servers
+    preview = f"https://static-cdn.jtvnw.net/previews-ttv/live_user_{login}-1920x1080.jpg?a={time()}"
 
     telegram.send_photo(settings.telegram.chat_id, preview,
                         fmt(ANNOUNCE, username=username, title=title, game=game, login=login, download_id=download_id),
