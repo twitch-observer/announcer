@@ -1,10 +1,10 @@
 import json
 from datetime import datetime
-from pathlib import Path
 from time import time
 
 from debug import logger
 from settings import settings
+from ymq import send_to_ymq
 from telegram import Telegram
 from texts import ANNOUNCE, USER_NOT_FOUND, USER_ADDED, USER_ALREADY_ADDED
 from twitch import Twitch
@@ -78,23 +78,23 @@ def handle_telegram_event(body, callback_url):
 
 
 def handler(event, context):
+    if "messages" in event:
+        for message in event["messages"]:
+            body = json.loads(message["details"]["message"]["body"])
+            handle_twitch_event(body)
+        return SUCCESS_RESPONSE
+
     body = json.loads(event["body"])
     if settings.debug:
         logger.debug("Received event.", data=event)
         logger.debug("Body from received event.", data=body)
 
-    if (message_id := event["headers"].get("Twitch-Eventsub-Message-Id")) and twitch.webhooks.verify_signature(event):
-        message_id_path = Path("/tmp", message_id)
-        if message_id_path.exists():
-            logger.warn("Twitch sent duplicated message.")
-            return SUCCESS_RESPONSE
+    if event["headers"].get("Twitch-Eventsub-Message-Id") and twitch.webhooks.verify_signature(event):
+        send_to_ymq(body)
+        return SUCCESS_RESPONSE
 
-        response = handle_twitch_event(body)
-        message_id_path.touch()
-        return response
-
-    if (token := event["headers"].get(
-            "X-Telegram-Bot-Api-Secret-Token")) and token == settings.event_secret.get_secret_value():
+    if ((token := event["headers"].get("X-Telegram-Bot-Api-Secret-Token"))
+            and token == settings.event_secret.get_secret_value()):
         return handle_telegram_event(body, f"https://functions.yandexcloud.net/{context.function_name}")
 
     if settings.debug:

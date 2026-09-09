@@ -36,10 +36,18 @@ class TelegramSettings(BaseSettings):
     class Config:
         env_prefix = "telegram_"
 
+class YandexCloudSettings(BaseSettings):
+    ymq_access_key: str
+    ymq_secret_key: SecretStr
+    ymq_queue_url: str
+
+    class Config:
+        env_prefix = "cloud_"
 
 class Settings(BaseSettings):
     twitch: TwitchSettings = TwitchSettings()
     telegram: TelegramSettings = TelegramSettings()
+    cloud: YandexCloudSettings = YandexCloudSettings()
     event_secret: SecretStr
     debug: bool = False
 
