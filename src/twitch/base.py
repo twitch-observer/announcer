@@ -2,6 +2,7 @@ import requests
 
 from debug import logger
 from settings import settings
+from utils import json_or_none
 
 
 class TwitchBase:
@@ -39,7 +40,7 @@ class TwitchBase:
             response.raise_for_status()
 
         if settings.debug:
-            logger.debug(f"Sent request to Twitch with code {response.status_code}.", data=response.json())
+            logger.debug(f"Sent request to Twitch with code {response.status_code}.", data=json_or_none(response))
 
         return response
 
@@ -53,6 +54,9 @@ class TwitchBase:
         return self._request("delete", url, params=params, **kwargs)
 
     def get_user(self, username):
+        if not username:
+            return None
+
         url = f"{settings.twitch.api_url}/users"
 
         data = {
@@ -79,3 +83,15 @@ class TwitchBase:
         response.raise_for_status()
 
         return response.json()["data"][0]
+
+    def get_users_by_ids(self, user_ids):
+        url = f"{settings.twitch.api_url}/users"
+
+        data = {
+            "id": user_ids,
+        }
+
+        response = self.get(url, data)
+        response.raise_for_status()
+
+        return response.json()["data"]

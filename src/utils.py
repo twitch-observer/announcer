@@ -1,5 +1,7 @@
 import re
 
+from requests.exceptions import JSONDecodeError
+
 from enums import ParseMode
 
 
@@ -16,3 +18,10 @@ def escape_markdown_v2(text):
 
 def filter_none(**kwargs):
     return {k: v for k, v in kwargs.items() if v is not None}
+
+
+def json_or_none(response):
+    try:
+        return response.json()
+    except (JSONDecodeError, ValueError):
+        return None

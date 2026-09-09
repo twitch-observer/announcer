@@ -62,6 +62,12 @@ class TwitchWebhooks(TwitchBase):
 
         return received_signature == actual_signature
 
+    def list_tracked_streamers(self):
+        subscriptions = self.list_webhooks().json()["data"]
+        user_ids = {subscription["condition"]["broadcaster_user_id"] for subscription in subscriptions}
+        users = self.get_users_by_ids(user_ids)
+        return [user["display_name"] for user in users]
+
 
 if __name__ == "__main__":
     twitch = TwitchWebhooks()
@@ -70,12 +76,23 @@ if __name__ == "__main__":
     user_id = twitch.get_user(username)["id"]
 
     # response = twitch.set_stream_online_webhook(user_id, "https://functions.yandexcloud.net/d4e3e1pj20kiarv743rf")
-    response = twitch.list_webhooks()
+    subscriptions = twitch.list_webhooks().json()
     from pprint import pprint
+    pprint(subscriptions)
 
-    pprint(response.json())
+    subscriptions = subscriptions["data"]
+    user_ids = [subscription["condition"]["broadcaster_user_id"] for subscription in subscriptions]
+    users = twitch.get_users_by_ids(user_ids)
+    id_to_name = {user["id"]: user["display_name"] for user in users}
+    subscriptions = {
+        subscription["id"]: id_to_name[subscription["condition"]["broadcaster_user_id"]]
+        for subscription in subscriptions
+    }
+    print(subscriptions)
 
-    # response = twitch.delete_webhook("5c36e5b2-fdeb-42d9-9a99-468f50285fb4")
+    print(twitch.list_tracked_streamers())
+
+    # response = twitch.delete_webhook("3a8cd037-dd3f-4fa6-b296-5ff44b05dc45")
     # print(response.status_code)
 
     # response = twitch.set_channel_update_webhook(user_id, "https://functions.yandexcloud.net/d4e3e1pj20kiarv743rf")

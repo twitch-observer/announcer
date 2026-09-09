@@ -41,22 +41,3 @@ data "archive_file" "twitch_observer_announcer_source" {
 
   depends_on = [local_file.requirements]
 }
-
-data "http" "twitch_observer_announcer_tg_webhook_creation" {
-  url = join("", [
-    "https://api.telegram.org/bot${var.tg_bot_token}/setWebhook",
-    "?url=https://bot.addefan.ru:8443/${yandex_function.twitch_observer_announcer.id}",
-    "&secret_token=${var.event_secret}",
-  ])
-}
-
-resource "null_resource" "twitch_observer_announcer_tg_webhook_cleanup" {
-  triggers = {
-    bot_token = var.tg_bot_token
-  }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = "curl -s -X POST https://api.telegram.org/bot${self.triggers.bot_token}/deleteWebhook"
-  }
-}

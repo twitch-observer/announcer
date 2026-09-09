@@ -4,11 +4,12 @@ from time import time
 
 from debug import logger
 from settings import settings
-from ymq import send_to_ymq
 from telegram import Telegram
-from texts import ANNOUNCE, USER_NOT_FOUND, USER_ADDED, USER_ALREADY_ADDED
+from texts import (ANNOUNCE, USER_NOT_FOUND, USER_ADDED, USER_ALREADY_ADDED, SUBSCRIPTION_NOT_FOUND,
+                   SUBSCRIPTION_DELETED, NO_TRACKED, TRACKED_LIST)
 from twitch import Twitch
 from utils import fmt
+from ymq import send_to_ymq
 
 twitch, telegram = Twitch(), Telegram()
 
@@ -70,6 +71,45 @@ def handle_telegram_event(body, callback_url):
                                   fmt(USER_ALREADY_ADDED, username=username),
                                   USER_ALREADY_ADDED["parse_mode"])
             return SUCCESS_RESPONSE
+
+    if (text := message.get("text")) and text.startswith("/remove"):
+        login = text[8:]
+
+        user = twitch.get_user(login)
+        if not user:
+            telegram.send_message(settings.telegram.chat_id,
+                                  fmt(USER_NOT_FOUND, login=login),
+                                  USER_NOT_FOUND["parse_mode"])
+            return SUCCESS_RESPONSE
+
+        username = user["display_name"]
+        subscriptions = twitch.webhooks.list_webhooks().json()["data"]
+        subscription = next((s for s in subscriptions if s["condition"]["broadcaster_user_id"] == user["id"]), None)
+        if not subscription:
+            telegram.send_message(settings.telegram.chat_id,
+                                  fmt(SUBSCRIPTION_NOT_FOUND, username=username),
+                                  SUBSCRIPTION_NOT_FOUND["parse_mode"])
+            return SUCCESS_RESPONSE
+
+        response = twitch.webhooks.delete_webhook(subscription["id"])
+        if response.status_code == 204:
+            telegram.send_message(settings.telegram.chat_id,
+                                  fmt(SUBSCRIPTION_DELETED, username=username),
+                                  SUBSCRIPTION_DELETED["parse_mode"])
+            return SUCCESS_RESPONSE
+
+    if (text := message.get("text")) and text.startswith("/list"):
+        streamers = twitch.webhooks.list_tracked_streamers()
+        if not streamers:
+            telegram.send_message(settings.telegram.chat_id,
+                                  NO_TRACKED["text"],
+                                  NO_TRACKED["parse_mode"])
+            return SUCCESS_RESPONSE
+
+        streamers_list = "\n".join(f"• {streamer}" for streamer in streamers)
+        telegram.send_message(settings.telegram.chat_id,
+                              fmt(TRACKED_LIST, streamers_list=streamers_list),
+                              TRACKED_LIST["parse_mode"])
 
     return SUCCESS_RESPONSE
 
