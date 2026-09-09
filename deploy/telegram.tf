@@ -17,7 +17,49 @@ resource "null_resource" "twitch_observer_announcer_tg_webhook_cleanup" {
   }
 }
 
+locals {
+  bot_commands = {
+    default = {
+      language_code = ""
+      commands = [
+        {
+          "command" : "add",
+          "description" : "Add channel for tracking. Usage: /add <username>"
+        },
+        {
+          "command" : "remove",
+          "description" : "Delete channel from tracking. Usage: /remove <username>"
+        },
+        {
+          "command" : "list",
+          "description" : "Show list of tracked channels"
+        }
+      ]
+    }
+
+    ru = {
+      language_code = "ru"
+      commands = [
+        {
+          command     = "add"
+          description = "Добавить канал для отслеживания. Использование: /add <никнейм>"
+        },
+        {
+          command     = "remove"
+          description = "Удалить канал из отслеживания. Использование: /remove <никнейм>"
+        },
+        {
+          command     = "list"
+          description = "Показать список отслеживаемых каналов"
+        }
+      ]
+    }
+  }
+}
+
 data "http" "twitch_observer_announcer_bot_commands" {
+  for_each = local.bot_commands
+
   url    = "https://api.telegram.org/bot${var.tg_bot_token}/setMyCommands"
   method = "POST"
 
@@ -25,20 +67,5 @@ data "http" "twitch_observer_announcer_bot_commands" {
     Content-Type = "application/json"
   }
 
-  request_body = jsonencode({
-    commands = [
-      {
-        "command" : "add",
-        "description" : "Добавить канал для отслеживания"
-      },
-      {
-        "command" : "remove",
-        "description" : "Удалить канал из отслеживания"
-      },
-      {
-        "command" : "list",
-        "description" : "Список отслеживаемых каналов"
-      }
-    ]
-  })
+  request_body = jsonencode(each.value)
 }

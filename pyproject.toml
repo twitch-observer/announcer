@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "twitch-observer-announcer"
-version = "1.1.0"
+version = "1.1.1"
 description = "A serverless (deployed on Yandex Cloud) Telegram bot delivering Twitch stream announcements from tracked channels to a specified chat."
 authors = ["Vitaly Zorin <addefan@mail.ru>"]
 readme = "README.md"
