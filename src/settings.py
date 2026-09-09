@@ -31,7 +31,7 @@ class TelegramSettings(BaseSettings):
     @computed_field
     @property
     def api_url(self) -> str:
-        return f"https://api.telegram.org/bot{self.bot_token.get_secret_value()}"
+        return f"https://bot.addefan.ru:8443/tg-api/bot{self.bot_token.get_secret_value()}"
 
     class Config:
         env_prefix = "telegram_"

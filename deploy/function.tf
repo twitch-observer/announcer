@@ -42,10 +42,10 @@ data "archive_file" "twitch_observer_announcer_source" {
   depends_on = [local_file.requirements]
 }
 
-locals {
-  twitch_observer_announcer_url = "https://functions.yandexcloud.net/${yandex_function.twitch_observer_announcer.id}"
-}
-
 data "http" "twitch_observer_announcer_set_tg_webhook" {
-  url = "https://api.telegram.org/bot${var.tg_bot_token}/setWebhook?url=${local.twitch_observer_announcer_url}&secret_token=${var.event_secret}"
+  url = join("", [
+    "https://api.telegram.org/bot${var.tg_bot_token}/setWebhook",
+    "?url=https://bot.addefan.ru:8443/${yandex_function.twitch_observer_announcer.id}",
+    "&secret_token=${var.event_secret}",
+  ])
 }
