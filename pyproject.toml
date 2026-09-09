@@ -1,13 +1,14 @@
 [tool.poetry]
 name = "twitch-observer-announcer"
-version = "0.1.0"
-description = ""
+version = "1.0.0"
+description = "A serverless (deployed on Yandex Cloud) Telegram bot delivering Twitch stream announcements from tracked channels to a specified chat."
 authors = ["Vitaly Zorin <addefan@mail.ru>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.13"
-requests = "^2.32.3"
+python = "^3.11"
+requests = "^2.33.0"
 pydantic-settings = "^2.7.1"
 pydantic = "^2.10.5"
 boto3 = "^1.43.89"

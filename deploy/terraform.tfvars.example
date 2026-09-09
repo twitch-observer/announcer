@@ -1,0 +1,8 @@
+cloud_id = ""
+folder_id = ""
+tg_bot_token = ""
+twitch_client_id = ""
+twitch_client_secret = ""
+tg_chat_id = ""
+event_secret = ""
+debug =

@@ -18,9 +18,6 @@ SUCCESS_RESPONSE = {
 
 
 def handle_twitch_event(body):
-    if challenge := body.get("challenge"):
-        return {"body": challenge}
-
     event = body["event"]
     user_id = event["broadcaster_user_id"]
     username = event["broadcaster_user_name"]
@@ -90,6 +87,9 @@ def handler(event, context):
         logger.debug("Body from received event.", data=body)
 
     if event["headers"].get("Twitch-Eventsub-Message-Id") and twitch.webhooks.verify_signature(event):
+        if challenge := body.get("challenge"):
+            return {"body": challenge}
+
         send_to_ymq(body)
         return SUCCESS_RESPONSE
 
